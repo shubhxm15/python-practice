@@ -9,15 +9,15 @@ import json
 recognizer = sr.Recognizer()
 engine = pyttsx3.init()
 
-# Spotify API credentials
+
 CLIENT_ID = '9e8dc82b47ea4f62a94f63a1bfa07fd7'
 CLIENT_SECRET = 'c751f6458d5745f9866d864cb67d67ad'
 REDIRECT_URI = 'http://localhost:8080/callback'
 
-# File to store access token
+
 TOKEN_FILE = 'access_token.json'
 
-# Step 1: Get user authorization (only needed once)
+
 def get_auth_token():
     auth_url = f"https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope=user-modify-playback-state user-read-playback-state streaming"
     print("Please log in to Spotify by visiting this URL:")
@@ -26,7 +26,7 @@ def get_auth_token():
     auth_code = input("Enter the code from the URL after logging in: ")
     return auth_code
 
-# Step 2: Exchange authorization code for an access token
+
 def get_access_token(auth_code):
     token_url = "https://accounts.spotify.com/api/token"
     payload = {
@@ -39,7 +39,7 @@ def get_access_token(auth_code):
     response = requests.post(token_url, data=payload)
     response_data = response.json()
     
-    # Check if the response contains an access token and handle errors
+    
     if "access_token" in response_data:
         return response_data
     else:
@@ -47,12 +47,12 @@ def get_access_token(auth_code):
         raise Exception("Failed to get access token.")
 
 
-# Step 3: Save the access token to a file
+
 def save_access_token(access_token):
     with open(TOKEN_FILE, 'w') as f:
         json.dump({"access_token": access_token}, f)
 
-# Step 4: Load the access token from the file
+
 def load_access_token():
     if os.path.exists(TOKEN_FILE):
         with open(TOKEN_FILE, 'r') as f:
@@ -60,7 +60,7 @@ def load_access_token():
             return data.get("access_token")
     return None
 
-# Step 5: Refresh the access token if expired
+
 def refresh_access_token(refresh_token):
     token_url = "https://accounts.spotify.com/api/token"
     payload = {
@@ -72,7 +72,7 @@ def refresh_access_token(refresh_token):
     response = requests.post(token_url, data=payload)
     return response.json()
 
-# Step 6: Search for the song on Spotify
+
 def search_song(song_name, access_token):
     search_url = "https://api.spotify.com/v1/search"
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -83,7 +83,7 @@ def search_song(song_name, access_token):
         return tracks[0]["uri"]
     return None
 
-# Step 7: Play the song on Spotify
+
 def play_song(song_uri, access_token):
     play_url = "https://api.spotify.com/v1/me/player/play"
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -97,7 +97,7 @@ def play_song(song_uri, access_token):
     return True
 
 
-# Function to handle various commands
+
 def processCommand(c):
     if "open google" in c.lower():
         webbrowser.open("https://google.com")
@@ -113,16 +113,16 @@ def processCommand(c):
         # Extract the song name from the command
         song_name = c[5:].strip().lower()
 
-        # Check if the song exists in musicly library
+        
         if song_name in musicly.music:
             webbrowser.open(musicly.music[song_name])
             speak(f"Playing {song_name} from your library.")
         else:
-            # Try playing the song on Spotify
+           
             try:
                 access_token = load_access_token()
 
-                # If the access token is not available, get a new one
+                
                 if not access_token:
                     auth_code = get_auth_token()
                     token_response = get_access_token(auth_code)
@@ -143,7 +143,7 @@ def processCommand(c):
                 print(f"Error with Spotify integration: {e}")
                 speak("There was an error with Spotify integration.")
 
-# Function to convert text to speech
+
 def speak(text):
     engine.say(text)
     engine.runAndWait()
@@ -167,3 +167,4 @@ if __name__ == "__main__":
 
         except Exception as e:
             print(f"Error: {e}")
+
